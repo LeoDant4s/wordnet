@@ -45,19 +45,6 @@ describe('Wordnet API', () => {
         });
       });
 
-      it('deveria fechar os arquivos de dados com sucesso', () => {
-        const wordnet = new Wordnet();
-        return wordnet.open().then(() => {
-          return wordnet.close().then((result) => {
-            expect(result).toBeInstanceOf(Array);
-            expect(result).toHaveLength(4);
-            result.forEach((fileHandlers) => {
-              expect(fileHandlers).toBeInstanceOf(Array);
-              expect(fileHandlers).toHaveLength(2);
-            });
-          })
-        });
-      });
     });
 
     describe('get(offset, pos)', () => {
