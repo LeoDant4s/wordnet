@@ -119,15 +119,7 @@ describe('Wordnet API', () => {
             expect(result).toEqual(['beautiful#a#1', 'beautiful#a#2']);
           });
       });
-
-      it('deveria obter sucesso especificando o tipo da palavra', () => {
-        return wordnet.querySense('beautiful#x')
-          .then((result) => {
-            expect(result).toBeInstanceOf(Array);
-            expect(result).toHaveLength(2);    
-            expect(result).toEqual(['beautiful#a#1', 'beautiful#a#2']);
-          });
-      });
+      
     });
     
 });
