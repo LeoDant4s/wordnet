@@ -260,7 +260,27 @@ describe('Teste de findSense', () => {
         expect(result).toHaveProperty('pos', 'n');
       });
   });
+});
 
+describe('Teste de loadExceptions', () => {
+  let wordnet;
 
+  beforeAll(() => {
+    wordnet = new Wordnet();
+    return wordnet.open();
+  });
 
+  afterAll(() => {
+    return wordnet.close();
+  });
+
+  it('Testar se as excessões foram carregadas corretamente', () => {
+    return wordnet.loadExceptions()
+      .then((exceptions) => {
+        // Verificar se as exceções foram carregadas corretamente
+        expect(exceptions).toBeDefined();
+        expect(typeof exceptions).toBe('object');
+        expect(Object.keys(exceptions).length).toBeGreaterThan(0);
+      });
+  });
 });
