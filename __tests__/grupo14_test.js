@@ -1,4 +1,6 @@
 const Wordnet = require('../lib/wordnet');
+const WordNetFile = require('../lib/wordnet-file');
+const WNdb = require('wndb-with-exceptions');
 
 describe('Wordnet API', () => {
     let wordnet;
@@ -122,4 +124,143 @@ describe('Wordnet API', () => {
       
     });
     
+});
+
+describe('Teste de lookup', () => {
+
+  let wordnet;
+
+  beforeAll(() => {
+    wordnet = new Wordnet();
+    return wordnet.open();
+  });
+
+  afterAll(() => {
+    return wordnet.close();
+  });
+
+  it('Testar palavra não desconhecida', () => {
+    return wordnet.lookup('jjjjjjj')
+      .then((result) => {
+        expect(result).toBeInstanceOf(Array);
+        expect(result).toHaveLength(0);
+      });
+  });
+
+  it('Teste com relação à estrutura da resposta retornada', () => {
+    return wordnet.lookup('cat#n')
+      .then((result) => {
+        expect(result).toBeInstanceOf(Array);
+        expect(result).toHaveLength(8);
+
+        const firstResult = result[0];
+        expect(firstResult).toHaveProperty('lemma', 'cat');
+        expect(firstResult).toHaveProperty('pos', 'n');
+        expect(firstResult).toHaveProperty('def');
+
+        expect(firstResult.synonyms).toBeInstanceOf(Array);
+      });
+  });
+
+  it('Teste para verificar se é case sensitive', () => {
+    return wordnet.lookup('PERSON#n')
+      .then((result) => {
+        expect(result).toBeInstanceOf(Array);
+        expect(result).not.toHaveLength(0);
+      });
+  });
+
+  it('Teste para verificar se a palavra fora do contexto dela, é reconhecido', () => {
+    return wordnet.lookup('shop')
+      .then((result) => {
+        expect(result).toBeInstanceOf(Array);
+        expect(result).not.toHaveLength(0);
+      });
+  });
+
+});
+
+describe('Teste de appendLineChar', () => {
+  const dataDir = WNdb.path;
+  const fileName = 'noun.exc';
+
+  it('Deve retornar a substring antes da próxima quebra de linha', () => {
+    const wordnetFile = new WordNetFile(dataDir, fileName);
+    return wordnetFile.open()
+      .then(() => {
+        const fd = wordnetFile._fd;
+        const buff = Buffer.alloc(10);
+        const pos = 0;
+        const buffPos = 0;
+
+        return wordnetFile.appendLineChar(fd, pos, buffPos, buff)
+          .then((result) => {
+            expect(result).toEqual('aardwolves aardwolf');
+          });
+      })
+      .finally(() => wordnetFile.close());
+  });
+
+  it('Deve retornar a substring antes da próxima quebra de linha a partir da posição 40', () => {
+    const wordnetFile = new WordNetFile(dataDir, fileName);
+
+    return wordnetFile.open()
+      .then(() => {
+        const fd = wordnetFile._fd;
+        const buff = Buffer.alloc(10);
+        const pos = 40;
+        const buffPos = 0;
+
+        return wordnetFile.appendLineChar(fd, pos, buffPos, buff)
+          .then((result) => {
+            expect(result).toEqual('ux aboideau');
+          });
+      })
+      .finally(() => wordnetFile.close());
+  });
+
+});
+
+describe('Teste de findSense', () => {
+
+  let wordnet;
+  beforeAll(() => {
+    wordnet = new Wordnet();
+    return wordnet.open();
+  });
+
+  afterAll(() => {
+    return wordnet.close();
+  });
+
+  it('Teste se falha caso seja usado um valor inválido de posição', () => {
+    const invalidInput = 'lie#v#second';
+    return wordnet.findSense(invalidInput)
+      .catch((error) => {
+        expect(error).toBeInstanceOf(Error);
+        expect(error.message).toBe('Sense number should be an integer');
+      });
+  });
+
+  it('Teste se falha caso seja usado um valor inteiro negativo de posição', () => {
+    const invalidInput = 'lie#v#-3';
+    return wordnet.findSense(invalidInput)
+      .catch((error) => {
+        expect(error).toBeInstanceOf(Error);
+        expect(error.message).toBe('Sense number should be a positive integer');
+      });
+  });
+
+  it('Teste de se retorna o elemento requerido', () => {
+    const validInput = 'cat#n#1';
+    return wordnet.findSense(validInput)
+      .then((result) => {
+        expect(result).toHaveProperty('lemma', 'cat');
+        expect(result).toHaveProperty('def', 'feline mammal usually having thick soft fur and no ability to roar: domestic cats');
+        expect(result).toHaveProperty('pos', 'n');
+      });
+  });
+
+
+
 });
