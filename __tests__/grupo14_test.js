@@ -271,7 +271,6 @@ describe('Teste de funções auxiliares', () => {
     it('Testar se as excessões foram carregadas corretamente', () => {
       return wordnet.loadExceptions()
         .then((exceptions) => {
-          // Verificar se as exceções foram carregadas corretamente
           expect(exceptions).toBeDefined();
           expect(typeof exceptions).toBe('object');
           expect(Object.keys(exceptions).length).toBeGreaterThan(0);
@@ -290,7 +289,7 @@ describe('Teste de funções auxiliares', () => {
           .then((result) => {
             // Verifica se o resultado é um array
             expect(Array.isArray(result)).toBe(true);
-            
+
             // Verifica se cada elemento do array é um objeto com as propriedades esperadas
             result.forEach((synset) => {
               expect(typeof synset).toBe('object');
@@ -302,4 +301,139 @@ describe('Teste de funções auxiliares', () => {
     });
   });
 
+});
+/*
+//MOCKs ou STUBs
+describe('Stub com findSense()', () => {
+  let wordnet;
+  let cache;
+
+  beforeEach(() => {
+    wordnet = new Wordnet();
+
+    cache = {
+      data: {},
+      get: function (key) {
+        return this.data[key] || null;
+      },
+      set: function (key, value) {
+        this.data[key] = value;
+      }
+    };
+    wordnet._cache = cache; // trocar pra analisar só no vazio msm
+  });
+
+  it('Teste para ver se a definição solicitada foi armazenada corretamente', () => {
+    const input = 'lie#v#7';
+    const expectedResult = { lemma: 'lie_down', pos: 'v' };
+    cache.set(`findSense:${input}`, expectedResult);
+
+    return wordnet.findSense(input).then((result) => {
+      expect(result).toEqual(expectedResult);
+    });
+  });
+
+});
+
+// Implementação de lookup usando um mock
+function lookupMock(input, cache, files) {
+  let query;
+  const [word, pos] = input.split('#');
+  const lword = word.toLowerCase().replace(/\s+/g, '_');
+
+  if (cache) {
+    let hit;
+    query = `lookup:${input}`;
+    if (hit = cache.get(query)) {
+      return Promise.resolve(hit);
+    }
+  }
+
+  const selectedFiles = (!pos) ? Object.values(files) : [files[pos]];
+  return Promise.resolve(selectedFiles); // Simulando o resultado esperado
+}
+
+// Exemplo de teste usando o mock
+test('lookup() should return selected files', () => {
+  const cache = new Map();
+  const files = {
+    n: 'noun_file.txt',
+    v: 'verb_file.txt'
+};
+
+  const input = 'run#v';
+  const expectedResult = ['verb_file.txt'];
+
+  const result = lookupMock(input, cache, files);
+
+  return expect(result).resolves.toEqual(expectedResult);
+});
+
+//Teste appendLineChar
+function appendLineCharStub(fd, pos, buffPos, buff) {
+  const { length } = buff;
+  const space = length - buffPos;
+
+  // Mock da função fd.read()
+  return Promise.resolve({ bytesRead: 5, buffer: buff }) // Valor de exemplo
+
+    .then(({ bytesRead, buffer }) => {
+      for (let i = 0, end = bytesRead - 1; i <= end; i++) {
+        if (buff[i] === 10) {
+          return buff.slice(0, i).toString('ASCII');
+        }
+      }
+
+      // Se chegarmos aqui, não encontramos uma quebra de linha, então precisamos tentar novamente.
+      // E precisamos de um buffer maior.
+      const newBuff = Buffer.alloc(length * 2);
+      buff.copy(newBuff, 0, 0, length);
+      return appendLineCharStub(fd, pos + length, length, newBuff);
+    });
+}
+
+// Exemplo de uso do stub
+const fd = {}; // Objeto fd simulado
+const pos = 0;
+const buffPos = 0;
+const buff = Buffer.from('Hello\nWorld');
+
+appendLineCharStub(fd, pos, buffPos, buff)
+  .then(result => {
+    console.log(result); // Saída: "Hello"
+  })
+  .catch(error => {
+    console.error(error);
+  });
+*/
+
+//Atividade 2
+describe("Wordnet API atv 2", () => {
+  describe("validForms", () => {
+    let wordnet;
+
+    beforeAll(() => {
+      wordnet = new Wordnet();
+      return wordnet.open();
+    });
+
+    afterAll(() => {
+      return wordnet.close();
+    });
+
+    it('Mostrar que o teste realmente retorna uma Promise', () => {
+      const result = wordnet.validForms('word#pos#sense');
+
+      expect(result instanceof Promise).toBe(true);
+    });
+
+    it('Mostrar que a resposta à variável inserida vai ser uma excessão', () => {
+      wordnet.exceptions = new Promise(() => { });
+
+      const result = wordnet.validForms('word#pos#sense');
+
+      expect(result).toStrictEqual(wordnet.exceptions);
+    });
+
+  });
 });
