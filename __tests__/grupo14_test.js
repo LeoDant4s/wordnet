@@ -289,7 +289,7 @@ describe('Teste de funções auxiliares', () => {
           .then((result) => {
             // Verifica se o resultado é um array
             expect(Array.isArray(result)).toBe(true);
-            
+
             // Verifica se cada elemento do array é um objeto com as propriedades esperadas
             result.forEach((synset) => {
               expect(typeof synset).toBe('object');
@@ -408,3 +408,32 @@ appendLineCharStub(fd, pos, buffPos, buff)
 */
 
 //Atividade 2
+describe("Wordnet API atv 2", () => {
+  describe("validForms", () => {
+    let wordnet;
+
+    beforeAll(() => {
+      wordnet = new Wordnet();
+      return wordnet.open();
+    });
+
+    afterAll(() => {
+      return wordnet.close();
+    });
+
+    it('Mostrar que o teste realmente retorna uma Promise', () => {
+      const result = wordnet.validForms('word#pos#sense');
+
+      expect(result instanceof Promise).toBe(true);
+    });
+
+    it('Mostrar que a resposta à variável inserida vai ser uma excessão', () => {
+      wordnet.exceptions = new Promise(() => { });
+
+      const result = wordnet.validForms('word#pos#sense');
+
+      expect(result).toStrictEqual(wordnet.exceptions);
+    });
+
+  });
+});
