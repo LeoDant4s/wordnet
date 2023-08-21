@@ -437,3 +437,92 @@ describe("Wordnet API atv 2", () => {
 
   });
 });
+
+// Atividade 3
+describe("Testar integração das funções", () => {
+  
+  describe("validForms", () => {
+    let wordnet;
+
+    beforeAll(() => {
+      wordnet = new Wordnet();
+      return wordnet.open();
+    });
+
+    afterAll(() => {
+      return wordnet.close();
+    });
+
+    it("Simula o retorno da função ValidForms", async () => {
+      
+      
+      const mockedExceptions = ['cats, cat'];
+      wordnet.loadExceptions = jest.fn(() => mockedExceptions); // Simula o retorno da função loadExceptions
+      wordnet.validFormsWithExceptions = jest.fn(() => true); // Simula o retorno da função validFormsWithExceptions
+
+      const result = await wordnet.validForms('cat#n')
+
+      expect(wordnet.loadExceptions).toHaveBeenCalled();
+      expect(wordnet.validFormsWithExceptions).toHaveBeenCalledWith('cat#n', mockedExceptions);
+      expect(result).toBe(true);
+
+    })
+
+ 
+
+describe('findSense', () => {
+
+     // Mock para simular o cache
+  const cacheMock = {
+    get: jest.fn(),
+    set: jest.fn(),
+  };
+
+// Mock para simular o objeto de arquivos e a função "lookupFromFiles"
+  const filesMock = {
+    n: 'file_n.txt',
+    v: 'file_v.txt',
+  };
+  const lookupFromFilesMock = jest.fn();
+
+  it('deve retornar o sentido e utilizar o cache', async () => {
+    wordnet._cache = cacheMock;
+    wordnet._files = filesMock;
+    wordnet.lookupFromFiles = lookupFromFilesMock;
+
+    const input = 'word#n#1';
+    const expectedResult = 'Definição do sentido';
+    cacheMock.get.mockReturnValueOnce(expectedResult);
+
+    const result = await wordnet.findSense(input);
+
+    expect(result).toEqual(expectedResult);
+    expect(cacheMock.get).toHaveBeenCalledWith(`findSense:${input}`);
+    expect(lookupFromFilesMock).not.toHaveBeenCalled();
+    expect(cacheMock.set).not.toHaveBeenCalled();
+  });
+
+  it('deve retornar o sentido sem o cache', async () => {
+    wordnet._cache = cacheMock;
+    wordnet._files = filesMock;
+    wordnet.lookupFromFiles = lookupFromFilesMock;
+
+    const input = 'word#n#1';
+    const lookupResponse = ['Definição 1', 'Definição 2'];
+    lookupFromFilesMock.mockResolvedValue(lookupResponse);
+    cacheMock.get.mockReturnValueOnce(null);
+
+    const expectedResult = 'Definição 1';
+
+    const result = await wordnet.findSense(input);
+
+    expect(result).toEqual(expectedResult);
+    expect(lookupFromFilesMock).toHaveBeenCalledWith(['file_n.txt'], 'word');
+    expect(cacheMock.set).toHaveBeenCalledWith(`findSense:${input}`, expectedResult);
+  });
+
+
+      })
+
+    })
+})
