@@ -109,13 +109,38 @@ describe('Wordnet API', () => {
         });
     });
 
+    it('deveria falhar com string vazia', () => {
+      return wordnet.querySense('')
+        .then((result) => {
+          expect(result).toBeInstanceOf(Array);
+          expect(result).toHaveLength(0);
+        });
+    });
+
+    it('deveria falhar com palavra inexistente', () => {
+      return wordnet.querySense('xxxxxxx#a')
+        .then((result) => {
+          expect(result).toBeInstanceOf(Array);
+          expect(result).toHaveLength(0);
+        });
+    });
+
   });
 
 
   describe('lookup(word)', () => {
 
-    it('Testar palavra não desconhecida', () => {
+    it('Testar palavra desconhecida', () => {
       return wordnet.lookup('jjjjjjj')
+        .then((result) => {
+          expect(result).toBeInstanceOf(Array);
+          expect(result).toHaveLength(0);
+        });
+    });
+
+    
+    it('Testar string vazia', () => {
+      return wordnet.lookup('')
         .then((result) => {
           expect(result).toBeInstanceOf(Array);
           expect(result).toHaveLength(0);
@@ -156,6 +181,13 @@ describe('Wordnet API', () => {
   });
 
   describe('findSense(input)', () => {
+
+    it('Teste se falha caso seja usado uma string vazia', () => {
+      return wordnet.findSense('')
+        .catch((error) => {
+          expect(error).toBeInstanceOf(Error);
+        });
+    });
 
     it('Teste se falha caso seja usado um valor inválido de posição', () => {
       const invalidInput = 'lie#v#second';
@@ -209,6 +241,13 @@ describe('Wordnet API', () => {
 
       validforms = await wordnet.validForms('run#v');
       expect(validforms).toEqual(['run#v']);
+    });
+
+    
+    test('deveria retornar array vazia ao passar uma string vazia', async () => {
+      let validforms = await wordnet.validForms('');
+      expect(validforms).toBeInstanceOf(Array);
+      expect(validforms).toHaveLength(0);
     })
   });
 
